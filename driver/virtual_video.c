@@ -70,8 +70,12 @@ struct virtual_video *virtual_dev;
 static struct virtual_video_fmt format[] = {
     {
         .name     = "ARGB8888, 32 bpp",
-        .fourcc   = V4L2_PIX_FMT_RGB32,
+        .fourcc   = V4L2_PIX_FMT_RGB32,  //byte0:a byte1:r byte2:g byte3:b
         .depth      = 32,
+    }, {
+        .name     = "32 bpp RGB, be",
+        .fourcc   = V4L2_PIX_FMT_BGR32,  //byte0:b byte1:g byte2:r byte3:a
+        .depth    = 32,
     },/* {
         .name     = "4:2:2, packed, YVY2",
         .fourcc   = V4L2_PIX_FMT_YUYV,
@@ -381,7 +385,6 @@ static int virtual_video_iops_s_fmt_vid_cap(struct file *file, void *priv, struc
     debug_printk(DBG_INFO, "%s:width=%d,height=%d\n", __FUNCTION__, f->fmt.pix.width, f->fmt.pix.height);
     debug_printk(DBG_INFO, "%s:field=%d,type=%d\n", __FUNCTION__,f->fmt.pix.field, f->type);
 
-
     dev->fmt           = format_by_fourcc(f->fmt.pix.pixelformat);
     dev->width         = f->fmt.pix.width;
     dev->height        = f->fmt.pix.height;
@@ -390,6 +393,10 @@ static int virtual_video_iops_s_fmt_vid_cap(struct file *file, void *priv, struc
     dev->fourcc       = f->fmt.pix.pixelformat;
 
     debug_printk(DBG_INFO, "%s:width=%d,height=%d\n", __FUNCTION__, dev->width, dev->height);
+    debug_printk(DBG_INFO, "pixelformat:%c%c%c%c\n",(dev->fourcc >> 0) & 0xFF,
+                                                    (dev->fourcc >> 8) & 0xFF,
+                                                    (dev->fourcc >> 16) & 0xFF,
+                                                    (dev->fourcc >> 24) & 0xFF);
     return retval;
 }
 
@@ -544,23 +551,44 @@ static void tick_timer_function(struct timer_list *t)
     vbuf = (char*)videobuf_to_vmalloc(vb);
     size = dev->fmt->depth * dev->width * dev->height >> 3;
     step = size/3;
-    for(i=0;i<step;i+=4){
-        vbuf[i]   = 0x00;
-        vbuf[i+1] = 0x00;
-        vbuf[i+2] = 0x00;
-        vbuf[i+3] = 0xff;
-    }
-    for(;i<step*2;i+=4){
-        vbuf[i]   = 0x00;
-        vbuf[i+1] = 0x00;
-        vbuf[i+2] = 0xff;
-        vbuf[i+3] = 0x00;
-    }
-    for(;i<size;i+=4){
-        vbuf[i]   = 0x00;
-        vbuf[i+1] = 0xff;
-        vbuf[i+2] = 0x00;
-        vbuf[i+3] = 0x00;
+    if(dev->fmt->fourcc == V4L2_PIX_FMT_RGB32){
+        for(i=0;i<step;i+=4){
+            vbuf[i]   = 0x00;  //a
+            vbuf[i+1] = 0x00;  //r
+            vbuf[i+2] = 0x00;  //g
+            vbuf[i+3] = 0xff;  //b
+        }
+        for(;i<step*2;i+=4){
+            vbuf[i]   = 0x00;
+            vbuf[i+1] = 0x00;
+            vbuf[i+2] = 0xff;
+            vbuf[i+3] = 0x00;
+        }
+        for(;i<size;i+=4){
+            vbuf[i]   = 0x00;
+            vbuf[i+1] = 0xff;
+            vbuf[i+2] = 0x00;
+            vbuf[i+3] = 0x00;
+        }
+    } else if(dev->fmt->fourcc == V4L2_PIX_FMT_BGR32){
+        for(i=0;i<step;i+=4){
+            vbuf[i]   = 0xff;  //b
+            vbuf[i+1] = 0x00;  //g
+            vbuf[i+2] = 0x00;  //r
+            vbuf[i+3] = 0xff;  //a
+        }
+        for(;i<step*2;i+=4){
+            vbuf[i]   = 0x00;
+            vbuf[i+1] = 0xff;
+            vbuf[i+2] = 0x00;
+            vbuf[i+3] = 0xff;
+        }
+        for(;i<size;i+=4){
+            vbuf[i]   = 0x00;
+            vbuf[i+1] = 0x00;
+            vbuf[i+2] = 0xff;
+            vbuf[i+3] = 0xff;
+        }
     }
 
 

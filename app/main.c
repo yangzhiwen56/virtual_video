@@ -110,7 +110,8 @@ int main(int argc, char argv[])
     //设置当前格式
     memset(&fmt, 0, sizeof(fmt));
     fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-    fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_RGB32;
+    //fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_RGB32;
+    fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_BGR32;
     fmt.fmt.pix.width  = IMAGE_WIDTH;
     fmt.fmt.pix.height = IMAGE_HEIGHT;
     fmt.fmt.pix.field  = V4L2_FIELD_INTERLACED;

@@ -105,10 +105,17 @@ int GenBmpFile(__u8 *pData, __u8 bitCountPerPix, __u32 width, __u32 height, cons
     for(y=0; y<height; y++){
         //memcpy(pbmp, pbuf, buf_byte_per_line);
         for(x=0; x<width; x++){
+            #if 0
             pbmp[x*byte_per_pix+3] = pbuf[x*byte_per_pix+0];
             pbmp[x*byte_per_pix+2] = pbuf[x*byte_per_pix+1];
             pbmp[x*byte_per_pix+1] = pbuf[x*byte_per_pix+2];
             pbmp[x*byte_per_pix+0] = pbuf[x*byte_per_pix+3];
+            #else
+            pbmp[x*byte_per_pix+0] = pbuf[x*byte_per_pix+0];
+            pbmp[x*byte_per_pix+1] = pbuf[x*byte_per_pix+1];
+            pbmp[x*byte_per_pix+2] = pbuf[x*byte_per_pix+2];
+            pbmp[x*byte_per_pix+3] = pbuf[x*byte_per_pix+3];
+            #endif
         }
         
         pbuf -= buf_byte_per_line;
