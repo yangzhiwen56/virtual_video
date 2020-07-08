@@ -1,0 +1,20 @@
+依赖ko：modinfo virtual_video.ko
+加载ko: insmod virtual_video.ko
+        modprobe virtual_video.ko
+卸载ko: rmmod virtual_video.ko
+查询ko: lsmod | grep virtual_video
+
+内核模块目录：/lib/modules/$(shell uname -r)/kernel  如：/lib/modules/$(shell uname -r)/kernel/drivers/media/v4l2-core/
+
+sudo modprobe videodev                       #depends:        media
+sudo modprobe v4l2-common                    #depends:        videodev
+sudo modprobe videobuf-core debug=3          #depends:
+sudo modprobe videobuf-vmalloc debug=3       #depends:        videobuf-core
+sudo insmod virtual_video.ko                    #depends:        videodev,videobuf-vmalloc,videobuf-core,v4l2-common
+
+cat /sys/module/videobuf_core/parameters/debug
+cat /sys/module/videobuf_vmalloc/parameters/debug
+cat /sys/module/virtual_video/parameters/debug
+
+gcc -o test main.c bitmap.c
+
